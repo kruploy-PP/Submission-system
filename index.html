@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบส่งงานออนไลน์ - Teacher Ploy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ใช้ Tailwind CSS จาก CDN แบบ production -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // กำหนดค่า Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Prompt', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #fce7f3 0%, #e0e7ff 50%, #f3e8ff 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3);
+        }
+        
+        .section-divider {
+            background: linear-gradient(90deg, transparent, #ec4899, transparent);
+            height: 2px;
+            margin: 2rem 0;
+        }
+        
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #fdf2f8, #faf5ff);
+            border: 2px solid #f9a8d4;
+        }
+        
+        .teacher-section {
+            background: linear-gradient(135deg, #f0f9ff, #fdf4ff);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .flex {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen smooth-scroll">
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col items-center space-y-3">
+                <img src="https://img5.pic.in.th/file/secure-sv1/-1ab96b02a66afe44d.png" 
+                     alt="โลโก้โรงเรียน" class="w-32 h-auto">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 text-center">
+                    ระบบส่งงานออนไลน์ – ห้องเรียน Teacher Ploy
+                </h1>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="mt-6">
+                <div class="flex justify-center space-x-4 md:space-x-8">
+                    <button onclick="scrollToSection('student-section')" 
+                            class="px-4 py-2 bg-pink-100 text-pink-700 rounded-full hover:bg-pink-200 transition-colors">
+                        📝 ส่งงาน
+                    </button>
+                    <button onclick="scrollToSection('teacher-section')" 
+                            class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
+                        👩‍🏫 แดชบอร์ดครู
+                    </button>
+                    <button onclick="scrollToSection('dashboard-section')" 
+                            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                        📊 สถิติ
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 space-y-12">
+        
+        <!-- Section 1: Student Submission Form -->
+        <section id="student-section" class="fade-in">
+            <div class="bg-white rounded-3xl p-8 card-shadow">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">📚 ส่งงานของนักเรียน</h2>
+                    <p class="text-gray-600">กรอกข้อมูลและแนบไฟล์งานของคุณ</p>
+                </div>
+                
+                <form id="studentForm" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                🔢 เลขที่นักเรียน
+                            </label>
+                            <input type="number" id="studentNumber" required
+                                   class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors"
+                                   placeholder="เช่น 15" min="1" max="50">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                👤 ชื่อ-นามสกุล (พร้อมคำนำหน้า)
+                            </label>
+                            <input type="text" id="studentName" required
+                                   class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors"
+                                   placeholder="เช่น เด็กหญิงสมใจ ใจดี">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                🏫 ชั้น/ห้อง
+                            </label>
+                            <select id="classroom" required
+                                    class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors">
+                                <option value="">เลือกชั้นเรียน</option>
+                                <option value="ป.1/13">ป.1/13</option>
+                                <option value="ป.2/13">ป.2/13</option>
+                                <option value="ป.3/13">ป.3/13</option>
+                                <option value="ป.4/13">ป.4/13</option>
+                                <option value="ป.5/13">ป.5/13</option>
+                                <option value="ป.6/13">ป.6/13</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                📋 ชิ้นงานที่ส่ง
+                            </label>
+                            <select id="assignmentNumber" required
+                                    class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors">
+                                <option value="">เลือกงานที่ส่ง</option>
+                                <option value="งานที่ 1">งานที่ 1</option>
+                                <option value="งานที่ 2">งานที่ 2</option>
+                                <option value="งานที่ 3">งานที่ 3</option>
+                                <option value="งานที่ 4">งานที่ 4</option>
+                                <option value="งานที่ 5">งานที่ 5</option>
+                                <option value="งานที่ 6">งานที่ 6</option>
+                                <option value="งานที่ 7">งานที่ 7</option>
+                                <option value="งานที่ 8">งานที่ 8</option>
+                                <option value="งานที่ 9">งานที่ 9</option>
+                                <option value="งานที่ 10">งานที่ 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            💭 คำอธิบายงาน
+                        </label>
+                        <textarea id="description" rows="3"
+                                  class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors"
+                                  placeholder="อธิบายเกี่ยวกับงานที่ส่ง (ไม่บังคับ)"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            🔗 ลิงก์ผลงาน (ถ้ามี)
+                        </label>
+                        <input type="url" id="workLink"
+                               class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors"
+                               placeholder="https://example.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            📎 แนบไฟล์งาน
+                        </label>
+                        <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                               class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+                        <p class="text-sm text-gray-500 mt-1">รองรับไฟล์: PDF, Word, รูปภาพ (ขนาดไม่เกิน 10MB)</p>
+                    </div>
+                    
+                    <button type="submit" class="w-full btn-primary text-white py-4 rounded-xl font-semibold text-lg">
+                        <span class="loading">⏳</span>
+                        <span class="submit-text">🚀 ส่งงาน</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 2: Teacher Dashboard -->
+        <section id="teacher-section" class="fade-in teacher-section rounded-3xl p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">👩‍🏫 แดชบอร์ดครู</h2>
+                <p class="text-gray-600">ตรวจงานและให้คะแนนนักเรียน</p>
+            </div>
+            
+            <!-- Teacher Login -->
+            <div id="teacherLogin" class="bg-white rounded-2xl p-6 card-shadow mb-6">
+                <h3 class="text-xl font-semibold mb-4 text-center">🔐 เข้าสู่ระบบครู</h3>
+                <div class="max-w-md mx-auto">
+                    <input type="password" id="teacherPassword" placeholder="รหัสผ่าน"
+                           class="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors mb-4">
+                    <button onclick="teacherLogin()" 
+                            class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-semibold transition-colors">
+                        เข้าสู่ระบบ
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Teacher Panel (Hidden by default) -->
+            <div id="teacherPanel" class="hidden">
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold">📋 รายการงานที่ส่ง</h3>
+                        <button onclick="refreshSubmissions()" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            🔄 รีเฟรช
+                        </button>
+                    </div>
+                    
+                    <div id="submissionsList" class="space-y-4">
+                        <!-- Submissions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 3: Dashboard Statistics -->
+        <section id="dashboard-section" class="fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">📊 แดชบอร์ดสถิติ</h2>
+                <p class="text-gray-600">ภาพรวมการส่งงานของนักเรียน</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card rounded-2xl p-6 text-center">
+                    <div class="text-3xl mb-2">📝</div>
+                    <div class="text-2xl font-bold text-pink-600" id="totalSubmissions">0</div>
+                    <div class="text-gray-600">งานที่ส่งทั้งหมด</div>
+                </div>
+                
+                <div class="stats-card rounded-2xl p-6 text-center">
+                    <div class="text-3xl mb-2">✅</div>
+                    <div class="text-2xl font-bold text-green-600" id="checkedSubmissions">0</div>
+                    <div class="text-gray-600">ตรวจแล้ว</div>
+                </div>
+                
+                <div class="stats-card rounded-2xl p-6 text-center">
+                    <div class="text-3xl mb-2">⏳</div>
+                    <div class="text-2xl font-bold text-orange-600" id="pendingSubmissions">0</div>
+                    <div class="text-gray-600">รอตรวจ</div>
+                </div>
+                
+                <div class="stats-card rounded-2xl p-6 text-center">
+                    <div class="text-3xl mb-2">⭐</div>
+                    <div class="text-2xl font-bold text-purple-600" id="averageScore">0</div>
+                    <div class="text-gray-600">คะแนนเฉลี่ย</div>
+                </div>
+            </div>
+            
+            <!-- Recent Submissions -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <h3 class="text-xl font-semibold mb-4">📋 งานที่ส่งล่าสุด</h3>
+                <div id="recentSubmissions" class="space-y-3">
+                    <!-- Recent submissions will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-sm mt-16 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600">
+                พัฒนาโดย T.Ploysai :: ภัทรนันท์ มุ้งบัง | 
+                © 2025 ระบบส่งงานออนไลน์
+            </p>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold text-green-600 mb-2">ส่งงานสำเร็จ!</h3>
+            <p class="text-gray-600 mb-6">งานของคุณได้รับการบันทึกเรียบร้อยแล้ว</p>
+            <button onclick="closeModal()" 
+                    class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby8ndOiJ4-cEbbvLYrn0s0p-pXlFWO7Q-TQe0hl-bx2vh_tGJSeMyBOHubovxx3nz52/exec';
+        const TEACHER_PASSWORD = 'admin999';
+        
+        // Utility Functions
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        function showLoading(show = true) {
+            const loading = document.querySelector('.loading');
+            const submitText = document.querySelector('.submit-text');
+            
+            if (show) {
+                loading.classList.add('show');
+                submitText.textContent = 'กำลังส่ง...';
+            } else {
+                loading.classList.remove('show');
+                submitText.textContent = '🚀 ส่งงาน';
+            }
+        }
+        
+        function showModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+        }
+        
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+        }
+        
+        // File to Base64 conversion
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // Student Form Submission
+        async function handleStudentFormSubmission(e) {
+            e.preventDefault();
+            showLoading(true);
+            
+            try {
+                const fileInput = document.getElementById('fileUpload');
+                const formData = new FormData();
+                
+                // Add form data to FormData
+                formData.append('studentNumber', document.getElementById('studentNumber').value);
+                formData.append('studentName', document.getElementById('studentName').value);
+                formData.append('classroom', document.getElementById('classroom').value);
+                formData.append('assignmentType', document.getElementById('assignmentNumber').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('workLink', document.getElementById('workLink').value);
+                formData.append('submissionDate', new Date().toLocaleString('th-TH'));
+                
+                // Handle file upload
+                if (fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    
+                    // Check file size (10MB limit)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('ไฟล์มีขนาดใหญ่เกินไป (เกิน 10MB)');
+                        showLoading(false);
+                        return;
+                    }
+                    
+                    formData.append('file', file);
+                }
+                
+                // Send to Google Apps Script
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showModal();
+                    document.getElementById('studentForm').reset();
+                    updateDashboard(); // Refresh dashboard
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการส่งงาน: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Teacher Login
+        function teacherLogin() {
+            const password = document.getElementById('teacherPassword').value;
+            
+            if (password === TEACHER_PASSWORD) {
+                document.getElementById('teacherLogin').style.display = 'none';
+                document.getElementById('teacherPanel').classList.remove('hidden');
+                loadSubmissions();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+                document.getElementById('teacherPassword').value = '';
+            }
+        }
+        
+        // Load submissions for teacher
+        async function loadSubmissions() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions');
+                const data = await response.json();
+                
+                const submissionsList = document.getElementById('submissionsList');
+                submissionsList.innerHTML = '';
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    data.data.forEach((submission, index) => {
+                        const submissionCard = createSubmissionCard(submission, index);
+                        submissionsList.appendChild(submissionCard);
+                    });
+                } else {
+                    submissionsList.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีงานที่ส่ง</p>';
+                }
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+            }
+        }
+        
+        // Create submission card for teacher
+        function createSubmissionCard(submission, index) {
+            const card = document.createElement('div');
+            card.className = 'bg-gray-50 rounded-xl p-4 border-l-4 border-pink-400';
+            
+            const isChecked = submission['สถานะ'] === 'ตรวจแล้ว';
+            const statusClass = isChecked ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h4 class="font-semibold text-lg">${submission['ชื่อ-นามสกุล']} (เลขที่ ${submission['เลขที่']})</h4>
+                        <p class="text-gray-600">${submission['ชั้น/ห้อง']} - ${submission['ชิ้นงานที่ส่ง']}</p>
+                        <p class="text-sm text-gray-500">ส่งเมื่อ: ${new Date(submission['วันเวลาที่ส่ง']).toLocaleString('th-TH')}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-sm ${statusClass}">
+                        ${submission['สถานะ']}
+                    </span>
+                </div>
+                
+                ${submission['คำอธิบาย'] ? `<p class="text-gray-700 mb-2"><strong>คำอธิบาย:</strong> ${submission['คำอธิบาย']}</p>` : ''}
+                ${submission['ลิงก์ผลงาน'] ? `<p class="mb-2"><strong>ลิงก์:</strong> <a href="${submission['ลิงก์ผลงาน']}" target="_blank" class="text-blue-500 hover:underline">ดูผลงาน</a></p>` : ''}
+                ${submission['ไฟล์แนบ'] ? `<p class="mb-3"><strong>ไฟล์:</strong> <a href="${submission['ไฟล์แนบ']}" target="_blank" class="text-blue-500 hover:underline">ดาวน์โหลด</a></p>` : ''}
+                
+                <div class="flex gap-3 mt-4">
+                    <input type="number" id="score_${index}" placeholder="คะแนน" min="0" max="100" 
+                           value="${submission['คะแนน'] || ''}"
+                           class="px-3 py-2 border border-gray-300 rounded-lg w-24">
+                    <input type="text" id="comment_${index}" placeholder="ความคิดเห็น" 
+                           value="${submission['ความคิดเห็นครู'] || ''}"
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                    <button onclick="updateGrade(${index}, '${submission['เลขที่']}', '${submission['ชื่อ-นามสกุล']}')" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        บันทึก
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Update grade
+        async function updateGrade(index, studentNumber, studentName) {
+            const score = document.getElementById(`score_${index}`).value;
+            const comment = document.getElementById(`comment_${index}`).value;
+
+            if (score && (isNaN(score) || score < 0 || score > 100)) {
+                alert('กรุณาใส่คะแนนระหว่าง 0-100');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'updateGrade');
+                formData.append('studentNumber', studentNumber);
+                formData.append('studentName', studentName);
+                formData.append('score', score);
+                formData.append('comment', comment);
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alert('บันทึกคะแนนสำเร็จ');
+                    loadSubmissions();
+                    updateDashboard();
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                console.error('Error updating grade:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกคะแนน: ' + error.message);
+            }
+        }
+        
+        // Refresh submissions
+        function refreshSubmissions() {
+            loadSubmissions();
+            updateDashboard();
+        }
+        
+        // Update dashboard statistics
+        async function updateDashboard() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?action=getStats');
+                const stats = await response.json();
+                
+                if (stats.status === 'success' && stats.data) {
+                    document.getElementById('totalSubmissions').textContent = stats.data.totalSubmissions || 0;
+                    document.getElementById('checkedSubmissions').textContent = stats.data.statusCounts['ตรวจแล้ว'] || 0;
+                    document.getElementById('pendingSubmissions').textContent = stats.data.statusCounts['รอตรวจ'] || 0;
+                }
+
+                // Load recent submissions
+                loadRecentSubmissions();
+
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+        
+        // Load recent submissions
+        async function loadRecentSubmissions() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions');
+                const data = await response.json();
+
+                const recentContainer = document.getElementById('recentSubmissions');
+                recentContainer.innerHTML = '';
+
+                if (data.status === 'success' && data.data.length > 0) {
+                    // Get 5 most recent submissions
+                    const recent = data.data.slice(-5).reverse();
+
+                    recent.forEach(submission => {
+                        const item = document.createElement('div');
+                        item.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                        item.innerHTML = `
+                            <div>
+                                <span class="font-medium">${submission['ชื่อ-นามสกุล']}</span>
+                                <span class="text-gray-500 ml-2">${submission['ชิ้นงานที่ส่ง']}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">${new Date(submission['วันเวลาที่ส่ง']).toLocaleString('th-TH')}</span>
+                        `;
+                        recentContainer.appendChild(item);
+                    });
+                } else {
+                    recentContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีงานที่ส่ง</p>';
+                }
+
+            } catch (error) {
+                console.error('Error loading recent submissions:', error);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener to form
+            const studentForm = document.getElementById('studentForm');
+            if (studentForm) {
+                studentForm.addEventListener('submit', handleStudentFormSubmission);
+            }
+            
+            // Add event listener for Enter key in teacher password
+            const teacherPasswordInput = document.getElementById('teacherPassword');
+            if (teacherPasswordInput) {
+                teacherPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        teacherLogin();
+                    }
+                });
+            }
+            
+            // Load initial dashboard
+            updateDashboard();
+            
+            console.log('ระบบส่งงานออนไลน์เริ่มต้นเรียบร้อยแล้ว');
+        });
+        
+        // Auto refresh dashboard every 30 seconds
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>
